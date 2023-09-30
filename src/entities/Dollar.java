@@ -1,41 +1,42 @@
 package entities;
 
-public class Cambio {
-	private Double real;
-
-	public Cambio() {
+public class Dollar {
+	private Double dollar;
+	
+	public Dollar() {
 	}
 	
-	public Cambio(Double real) {
-		this.real = real;
-	}
-
-	public Double getReal() {
-		return real;
-	}
-
-	public void setReal(Double real) {
-		this.real = real;
+	public Dollar(Double dollar) {
+		this.dollar = dollar;
 	}
 	
-	public Double convertionDollar() {
-		return real * 0.20;
+	public Double getDollar() {
+		return dollar;
+	}
+	
+	public void setDollar(Double dollar) {
+		this.dollar = dollar;
+	}
+	
+	public Double convertionReal() {
+		return dollar * 5.03;
 	}
 	
 	public Double convertionEuro() {
-		return real * 0.19;
+		return dollar * 0.95;
 	}
 	
 	public Double convertionLibra() {
-		return real * 6.24;
+		return dollar * 30.90;
 	}
 	
 	public Double convertionPeso() {
-		return real * 70.90;
+		return dollar * 350.02;
 	}
+	
 	@Override
 	public String toString() {
-		return String.format("%.2f", convertionDollar());
+		return String.format("%.2f", convertionReal());
 	}
 	
 	public String toString1() {

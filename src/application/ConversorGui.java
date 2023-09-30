@@ -16,7 +16,11 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 
-import entities.Cambio;
+import entities.Dollar;
+import entities.Euro;
+import entities.Libra;
+import entities.Peso;
+import entities.Real;
 
 public class ConversorGui extends JFrame{
 	public ConversorGui() {
@@ -33,12 +37,15 @@ public class ConversorGui extends JFrame{
 		JPanel convertPanel = new JPanel();
 		convertPanel.setLayout(springLayout);
 		
-		//dinheiro em reais
-		JLabel reaisLabel = new JLabel("Reais: ");
-		reaisLabel.setFont(new Font("Dialog", Font.PLAIN, 18));
+		String coins[] = {"Real", "Dollar", "Euro", "Libra", "Peso"};
+		String coins1[] = {"Dollar", "Euro", "Libra", "Peso"};
 		
-		JTextField reaisField = new JTextField(15);
-		((AbstractDocument) reaisField.getDocument()).setDocumentFilter(new DocumentFilter() {
+		//dinheiro em moeda inicial
+		JLabel coinLabel = new JLabel("Reais: ");
+		coinLabel.setFont(new Font("Dialog", Font.PLAIN, 18));
+		
+		JTextField coinField = new JTextField(15);
+		((AbstractDocument) coinField.getDocument()).setDocumentFilter(new DocumentFilter() {
 			@Override
 			public void replace(FilterBypass fb, int offset, int lenght, String text, AttributeSet attrs) throws BadLocationException{
 				String newText = fb.getDocument().getText(0, fb.getDocument().getLength()) + text;
@@ -49,87 +56,196 @@ public class ConversorGui extends JFrame{
 				}
 			}
 		});
-		reaisField.setFont(new Font("Dialog", Font.PLAIN, 18));
+		coinField.setFont(new Font("Dialog", Font.PLAIN, 18));
 		
-		springLayout.putConstraint(SpringLayout.WEST, reaisLabel, 35, SpringLayout.WEST, convertPanel);
-		springLayout.putConstraint(SpringLayout.NORTH, reaisLabel, 50, SpringLayout.NORTH, convertPanel);
-		springLayout.putConstraint(SpringLayout.WEST, reaisField, 135, SpringLayout.WEST, convertPanel);
-		springLayout.putConstraint(SpringLayout.NORTH, reaisField, 50, SpringLayout.NORTH, convertPanel);
+		springLayout.putConstraint(SpringLayout.WEST, coinLabel, 35, SpringLayout.WEST, convertPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, coinLabel, 100, SpringLayout.NORTH, convertPanel);
+		springLayout.putConstraint(SpringLayout.WEST, coinField, 135, SpringLayout.WEST, convertPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, coinField, 100, SpringLayout.NORTH, convertPanel);
 		
-		convertPanel.add(reaisLabel);
-		convertPanel.add(reaisField);
+		convertPanel.add(coinLabel);
+		convertPanel.add(coinField);
 		
-		//dinheiro em dollar
-		JLabel dollarLabel = new JLabel("Dollar: ");
-		dollarLabel.setFont(new Font("Dialog", Font.PLAIN, 18));
+		// campo para selecionar a moeda inicial
+		JLabel selectionLabel1 = new JLabel("Escolha a moeda inicial: ");
+		selectionLabel1.setFont(new Font("Dialog", Font.PLAIN, 18));
 		
-		JTextField dollarField = new JTextField(15);
-		dollarField.setFont(new Font("Dialog", Font.PLAIN, 18));
-		
-		springLayout.putConstraint(SpringLayout.WEST, dollarLabel, 35, SpringLayout.WEST, convertPanel);
-		springLayout.putConstraint(SpringLayout.NORTH, dollarLabel, 250, SpringLayout.NORTH, convertPanel);
-		springLayout.putConstraint(SpringLayout.WEST, dollarField, 135, SpringLayout.WEST, convertPanel);
-		springLayout.putConstraint(SpringLayout.NORTH, dollarField, 250, SpringLayout.NORTH, convertPanel);
-		
-		convertPanel.add(dollarLabel);
-		convertPanel.add(dollarField);
-		
-		// campo para selecionar para qual moeda deseja fazer o cambio
-		JLabel selectionLabel = new JLabel("Escolha para qual moeda deseja converter:");
-		selectionLabel.setFont(new Font("Dialog", Font.PLAIN, 18));
-		
-		String coins[] = {"Dollar", "Euro", "Libra", "Peso"};
-		
-		JComboBox selectionBox = new JComboBox(coins);
-		selectionBox.setFont(new Font("Dialog", Font.PLAIN, 18));
-		selectionBox.setSelectedItem(coins[0]);
-		selectionBox.addActionListener(new ActionListener() {
+		JComboBox selectionBox1 = new JComboBox(coins);
+		selectionBox1.setSelectedItem(coins[0]);
+		JComboBox selectionBox2 = new JComboBox(coins1);
+		selectionBox1.setFont(new Font("Dialog", Font.PLAIN, 18));
+		selectionBox1.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String selectionOption = (String) selectionBox.getSelectedItem();
-				dollarLabel.setText(selectionOption + ": ");
+				String selectionOption = (String) selectionBox1.getSelectedItem();
+				coinLabel.setText(selectionOption + ": ");
+				
+				//atualiza o segundo combobox de acordo com a seleção do primeiro
+				selectionBox2.removeAllItems();
+				String test[] = isNewCoins(coins, (String) selectionBox1.getSelectedItem());
+				for (int i=0; i<test.length; i++) {
+					if (test[i] != null) {
+						selectionBox2.addItem(test[i]);
+					}
+				}
 			}
 		});
 		
-		springLayout.putConstraint(SpringLayout.WEST, selectionLabel, 35, SpringLayout.WEST, convertPanel);
-		springLayout.putConstraint(SpringLayout.NORTH, selectionLabel, 90, SpringLayout.NORTH, convertPanel);
-		springLayout.putConstraint(SpringLayout.WEST,selectionBox, 35, SpringLayout.WEST, convertPanel);
-		springLayout.putConstraint(SpringLayout.NORTH, selectionBox, 120, SpringLayout.NORTH, convertPanel);
+		springLayout.putConstraint(SpringLayout.WEST, selectionLabel1, 35, SpringLayout.WEST, convertPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, selectionLabel1, 20, SpringLayout.NORTH, convertPanel);
+		springLayout.putConstraint(SpringLayout.WEST, selectionBox1, 35, SpringLayout.WEST, convertPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, selectionBox1, 50, SpringLayout.NORTH, convertPanel);
 		
-		convertPanel.add(selectionLabel);
-		convertPanel.add(selectionBox);
+		convertPanel.add(selectionLabel1);
+		convertPanel.add(selectionBox1);
+		
+		//dinheiro em moeda convertida
+		JLabel coinConvertLabel = new JLabel("Dollar: ");
+		coinConvertLabel.setFont(new Font("Dialog", Font.PLAIN, 18));
+		
+		JTextField coinConvertField = new JTextField(15);
+		coinConvertField.setFont(new Font("Dialog", Font.PLAIN, 18));
+		
+		springLayout.putConstraint(SpringLayout.WEST, coinConvertLabel, 35, SpringLayout.WEST, convertPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, coinConvertLabel, 400, SpringLayout.NORTH, convertPanel);
+		springLayout.putConstraint(SpringLayout.WEST, coinConvertField, 135, SpringLayout.WEST, convertPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, coinConvertField, 400, SpringLayout.NORTH, convertPanel);
+		
+		convertPanel.add(coinConvertLabel);
+		convertPanel.add(coinConvertField);
+		
+		// campo para selecionar para qual moeda deseja fazer o cambio
+		JLabel selectionLabel2 = new JLabel("Escolha para qual moeda deseja converter:");
+		selectionLabel2.setFont(new Font("Dialog", Font.PLAIN, 18));
+		
+		//JComboBox selectionBox2 = new JComboBox(isNewCoins(coins, (String) selectionBox1.getSelectedItem()));
+		selectionBox2.setFont(new Font("Dialog", Font.PLAIN, 18));
+		selectionBox2.setSelectedItem(coins[1]);
+		selectionBox2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String selectionOption = (String) selectionBox2.getSelectedItem();
+				coinConvertLabel.setText(selectionOption + ": ");
+			}
+		});
+		
+		springLayout.putConstraint(SpringLayout.WEST, selectionLabel2, 35, SpringLayout.WEST, convertPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, selectionLabel2, 200, SpringLayout.NORTH, convertPanel);
+		springLayout.putConstraint(SpringLayout.WEST,selectionBox2, 35, SpringLayout.WEST, convertPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, selectionBox2, 230, SpringLayout.NORTH, convertPanel);
+		
+		convertPanel.add(selectionLabel2);
+		convertPanel.add(selectionBox2);
 		
 		//botao de converter
 		JButton convertButton = new JButton("Converter");
 		convertButton.setFont(new Font("Dialog", Font.BOLD, 18));
 		springLayout.putConstraint(SpringLayout.WEST, convertButton, 135, SpringLayout.WEST, convertPanel);
-		springLayout.putConstraint(SpringLayout.NORTH, convertButton, 160, SpringLayout.WEST, convertPanel);
+		springLayout.putConstraint(SpringLayout.NORTH, convertButton, 300, SpringLayout.WEST, convertPanel);
 		convertButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				
-				String number = reaisField.getText();
-				Cambio cambio = new Cambio();
+				String number = coinField.getText();
+				Real real = new Real();
+				Dollar dollar = new Dollar();
+				Euro euro = new Euro();
+				Libra libra = new Libra();
+				Peso peso = new Peso();
 				
-				if (reaisField != null) {
-					cambio = new Cambio(Double.parseDouble(number));
-					//String toStringResult = cambio.toString();
-					//dollarField.setText(toStringResult);
-					if (selectionBox.getSelectedItem().equals("Dollar")) {
-						String toStringResult = cambio.toString();
-						dollarField.setText(toStringResult);
+				if (coinField != null && selectionBox1.getSelectedItem().equals("Real")) {
+					real = new Real(Double.parseDouble(number));
+					if (selectionBox2.getSelectedItem().equals("Dollar")) {
+						String toStringResult = real.toString();
+						coinConvertField.setText(toStringResult);
 					}
-					else if (selectionBox.getSelectedItem().equals("Euro")) {
-						String toStringResult = cambio.toString1();
-						dollarField.setText(toStringResult);
+					else if (selectionBox2.getSelectedItem().equals("Euro")) {
+						String toStringResult = real.toString1();
+						coinConvertField.setText(toStringResult);
 					}
-					else if (selectionBox.getSelectedItem().equals("Libra")) {
-						String toStringResult = cambio.toString2();
-						dollarField.setText(toStringResult);
+					else if (selectionBox2.getSelectedItem().equals("Libra")) {
+						String toStringResult = real.toString2();
+						coinConvertField.setText(toStringResult);
 					}
-					else if (selectionBox.getSelectedItem().equals("Peso")) {
-						String toStringResult = cambio.toString3();
-						dollarField.setText(toStringResult);
+					else if (selectionBox2.getSelectedItem().equals("Peso")) {
+						String toStringResult = real.toString3();
+						coinConvertField.setText(toStringResult);
+					}
+				}
+				else if (coinField != null && selectionBox1.getSelectedItem().equals("Dollar")) {
+					dollar = new Dollar(Double.parseDouble(number));
+					if (selectionBox2.getSelectedItem().equals("Real")) {
+						String toStringResult = dollar.toString();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Euro")) {
+						String toStringResult = dollar.toString1();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Libra")) {
+						String toStringResult = dollar.toString2();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Peso")) {
+						String toStringResult = dollar.toString3();
+						coinConvertField.setText(toStringResult);
+					}
+				}
+				else if (coinField != null && selectionBox1.getSelectedItem().equals("Euro")) {
+					euro = new Euro(Double.parseDouble(number));
+					if (selectionBox2.getSelectedItem().equals("Real")) {
+						String toStringResult = euro.toString();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Dollar")) {
+						String toStringResult = euro.toString1();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Libra")) {
+						String toStringResult = euro.toString2();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Peso")) {
+						String toStringResult = euro.toString3();
+						coinConvertField.setText(toStringResult);
+					}
+				}
+				else if (coinField != null && selectionBox1.getSelectedItem().equals("Libra")) {
+					libra = new Libra(Double.parseDouble(number));
+					if (selectionBox2.getSelectedItem().equals("Real")) {
+						String toStringResult = libra.toString();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Dollar")) {
+						String toStringResult = libra.toString1();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Euro")) {
+						String toStringResult = libra.toString2();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Peso")) {
+						String toStringResult = libra.toString3();
+						coinConvertField.setText(toStringResult);
+					}
+				}
+				else if (coinField != null && selectionBox1.getSelectedItem().equals("Peso")) {
+					peso = new Peso(Double.parseDouble(number));
+					if (selectionBox2.getSelectedItem().equals("Real")) {
+						String toStringResult = peso.toString();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Dollar")) {
+						String toStringResult = peso.toString1();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Euro")) {
+						String toStringResult = peso.toString2();
+						coinConvertField.setText(toStringResult);
+					}
+					else if (selectionBox2.getSelectedItem().equals("Libra")) {
+						String toStringResult = peso.toString3();
+						coinConvertField.setText(toStringResult);
 					}
 				}
 			}
@@ -148,6 +264,16 @@ public class ConversorGui extends JFrame{
 		} catch (NumberFormatException e) {
 			return false;
 		}
+	}
+	
+	private String[] isNewCoins(String coins[], String option) {
+		String coins2[] = new String[5]; 
+		for (int i = 0; i<coins.length; i++) {
+			if (coins[i] != option) {
+				coins2[i] = coins[i];
+			}
+		}
+		return coins2;
 	}
 
 }
